@@ -1,11 +1,14 @@
 # ignore tenant related files
 okapi_token
 okapi_url
+okapi_username
+okapi_password
 tenant
 
 # ignore directories created during runtime
 Inventory/Instances/data/
 Inventory/Instances/hrid/
+Inventory/Instances/-H
 Inventory/Instances/log_deleted_records
 Inventory/Bound-with-parts/log_deleted_bound_with_parts/
 
