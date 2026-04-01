@@ -61,10 +61,7 @@ refresh_token
 
 # Output file
 output_file="${input_file}_instances_${timestamp}.json"
-
-# Open JSON array
-echo '[' > "${output_file}"
-first=true
+jsonl_tmp=$(mktemp --tmpdir instances.XXXXXXXXXX.jsonl)
 
 # Loop through each line in the input file and write the result into file
 while IFS= read -r uuid || [ "${uuid}" ]; do
@@ -75,16 +72,12 @@ while IFS= read -r uuid || [ "${uuid}" ]; do
         -H "X-Okapi-Tenant: ${tenant}" \
         -H "x-okapi-token: ${okapi_token}" \
         "${okapi_url}/instance-storage/instances/${uuid}" | jq -c '.')
-    if [ "$first" = true ]; then
-        first=false
-    else
-        echo ',' >> "${output_file}"
-    fi
-    echo "${result}" >> "${output_file}"
+    [ -n "$result" ] && echo "${result}" >> "${jsonl_tmp}"
 done < "${input_file}"
 
-# Close JSON array
-echo ']' >> "${output_file}"
+# Wrap all records into a JSON array
+jq -cs '.' "${jsonl_tmp}" > "${output_file}"
+rm "${jsonl_tmp}"
 
 # HRID file
 hrid_file="${output_file}_hrids.txt"
