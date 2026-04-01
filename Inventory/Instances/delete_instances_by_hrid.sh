@@ -62,6 +62,7 @@ refresh_token
 
 # Output file
 output_file="${input_file}_deleted_${timestamp}.json"
+jsonl_tmp=$(mktemp --tmpdir instances.XXXXXXXXXX.jsonl)
 
 read -p "Are you sure you want to DELETE these instances? Then type \"y\" to proceed: " -n 1 -r
 echo    # move to a new line
@@ -74,8 +75,13 @@ then
         hrid_cleaned=$(echo "${hrid}" | tr -d '\r' | xargs)
         echo "Processing HRID: ${hrid_cleaned}"
         result=$(curl -s -w '\n' -X DELETE -d "{ \"hrid\": \"${hrid_cleaned}\" }" -H "Content-type: application/json" -H "x-okapi-tenant: ${tenant}" -H "x-okapi-token: ${okapi_token}" "${okapi_url}/inventory-upsert-hrid")
-        echo "$result" >> "${output_file}"
+        #echo "$result" >> "${output_file}"
+        echo "${result}" >> "${jsonl_tmp}"
     done < "$input_file"
+
+    # Wrap all records into a JSON array
+    jq -cs '.' "${jsonl_tmp}" > "${output_file}"
+    rm "${jsonl_tmp}"
 
     deleted_record_dir="log_deleted_records"
 
