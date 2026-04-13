@@ -1,4 +1,14 @@
 #!/bin/bash
+set -e
+tenant=$(cat "`dirname $0`"/../tenant)
+okapi_url=$(cat "`dirname $0`"/../okapi_url)
+okapi_username=$(cat "`dirname $0`"/../okapi_username)
+okapi_password=$(cat "`dirname $0`"/../okapi_password)
+timestamp=$(date +%Y%m%d_%H%M%S)
+endpoint="/erm/sas"
+
+# Token lifespan in seconds (default: 55 minutes)
+TOKEN_LIFESPAN=${TOKEN_LIFESPAN:-3300}
 
 # Initialize variables
 page=1
@@ -7,14 +17,46 @@ all_data="[]"
 data_dir="data"
 timestamp=$(date +%Y%m%d_%H%M%S)
 
-# OKAPI information
-okapi_token=$(cat "`dirname $0`"/../okapi_token)
-okapi_url=$(cat "`dirname $0`"/../okapi_url)
-endpoint="/erm/sas"
-
 # Files
 temp_file="response_temp.json"
 output_file="agreements_${timestamp}.json"
+
+# Login and store cookies, set token timestamp
+COOKIES=$(mktemp --tmpdir cookies.XXXXXXXXXX)
+token_timestamp=0
+
+refresh_token() {
+    echo "Fetching new token..."
+    # Clear and recreate cookie file
+    > "$COOKIES"
+    LOGIN=$(jq -n -c --arg username "$okapi_username" --arg password "$okapi_password" \
+        '{"username": $username, "password": $password}')
+    curl -sS -D - -j -c "$COOKIES" \
+        -H "X-Okapi-Tenant: ${tenant}" \
+        -H "Content-type: application/json" \
+        -d "$LOGIN" \
+        "${okapi_url}/authn/login-with-expiry"
+
+    okapi_token=$(grep -oP '(?<=\tfolioAccessToken\t)\S+' "$COOKIES")
+    if [ -z "$okapi_token" ]; then
+        echo "Failed to extract folioAccessToken from cookies."
+        rm "$COOKIES"
+        exit 1
+    fi
+    token_timestamp=$(date +%s)
+    echo "Token refreshed at $(date -d @${token_timestamp})"
+}
+
+ensure_valid_token() {
+    local now
+    now=$(date +%s)
+    if [ $(( now - token_timestamp )) -ge "$TOKEN_LIFESPAN" ]; then
+        refresh_token
+    fi
+}
+
+# Initial login
+refresh_token
 
 # Function to get the next page
 fetch_data() {
@@ -27,6 +69,7 @@ while :; do
     echo "Fetching data for page $page with $per_page records per page..."
 
     # API call
+    ensure_valid_token
     fetch_data "$page" "$per_page"
 
     # Check whether the answer is valid
