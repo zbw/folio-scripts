@@ -25,9 +25,17 @@ fi
 OUTPUT="${INPUT%.json}.tsv"
 
 jq -r '
-    ["ID", "Name", "Status"] as $headers |
+    ["ID", "Name", "Status", "Startdatum", "Enddatum", "Inhaltstyp", "Bezugsweg", "Wirkender Vertrag (UUID)"] as $headers |
     $headers,
-    (sort_by(.name)[] | [.id, .name, .agreementStatus.value])
+    (sort_by(.name)[] | [.id,
+        .name,
+        .agreementStatus.label,
+        .startDate,
+        .endDate,
+        ([.agreementContentTypes[]?.contentType.label] | join("|")),
+        ([.customProperties.procurementChannel[]?.value.label] | join("|")),
+        ([.linkedLicenses[]? | select(.status.value == "controlling") | .remoteId] | join("|"))
+        ])
     | @tsv
 ' "$INPUT" > "$OUTPUT"
 
