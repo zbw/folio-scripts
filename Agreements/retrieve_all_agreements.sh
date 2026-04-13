@@ -110,6 +110,6 @@ echo "$count records have been saved to $output_file ($unique_count are unique).
 
 # Cleanup
 [ ! -d "$data_dir" ] && mkdir -p "$data_dir"
-
+rm "$COOKIES"
 mv "${temp_file}" "${data_dir}"
 mv "${output_file}" "${data_dir}"
