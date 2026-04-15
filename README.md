@@ -2,15 +2,19 @@
 
 ## Disclaimer
 
-Use these scripts with extreme caution! Once called and confirmed, records will be **updated** or **deleted** in the given tenant. This is irreversible.
+Use these scripts with extreme caution! Once called and confirmed, records will be **retrieved**, **updated** or **deleted** in the given tenant. Updating and deleting is irreversible.
+
+For detailled information about how to use a scripta, consider the README in each subdirectory.
 
 ## Use
 
 The scripts require the jq utility to use. All assume you have the following files in the working directory:
 
-- *tenant* -- contains the ID of the FOLIO tenant
-- *okapi_url* -- contains the Okapi URL for the tenant
-- *okapi_token* -- contains a valid Okapi token
+- *tenant* -- name of the FOLIO tenant
+- *okapi_url* -- Okapi URL for the tenant
+- *oakpi_username* -- username for login
+- *okapi_password* -- password relating to okapi_username
+- *okapi_token* -- contains a valid Okapi token **(DEPRECATED)**
 
 ## Authors
 
