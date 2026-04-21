@@ -1,16 +1,20 @@
 #!/bin/bash
+set -e
 
 # Initialize variables
 search="ENTERPRISE"
 replace="EOWYN"
 timestamp=$(date +%Y%m%d_%H%M%S)
 
-# OKAPI information
-okapi_token=$(cat "$(dirname $0)"/../okapi_token)
+tenant=$(cat "$(dirname $0)"/../tenant)
 okapi_url=$(cat "$(dirname $0)"/../okapi_url)
+okapi_username=$(cat "$(dirname $0)"/../okapi_username)
+okapi_password=$(cat "$(dirname $0)"/../okapi_password)
 endpoint="licenses/licenses"
 
-# Files
+# Token lifespan in seconds (default: 55 minutes)
+TOKEN_LIFESPAN=${TOKEN_LIFESPAN:-3300}
+
 # Files
 data_file=$1
 if [[ -z "$data_file" ]]; then
@@ -22,6 +26,42 @@ data_file_replaced_matched="${data_file_replaced}_matched.json"
 uuid_file="data/uuids.txt"
 data_dir="data"
 records_dir="data/records"
+
+# Login and store cookies, set token timestamp
+COOKIES=$(mktemp --tmpdir cookies.XXXXXXXXXX)
+token_timestamp=0
+
+refresh_token() {
+    echo "Fetching new token..."
+    > "$COOKIES"
+    LOGIN=$(jq -n -c --arg username "$okapi_username" --arg password "$okapi_password" \
+        '{"username": $username, "password": $password}')
+    curl -sS -D - -j -c "$COOKIES" \
+        -H "X-Okapi-Tenant: ${tenant}" \
+        -H "Content-type: application/json" \
+        -d "$LOGIN" \
+        "${okapi_url}/authn/login-with-expiry"
+
+    okapi_token=$(grep -oP '(?<=\tfolioAccessToken\t)\S+' "$COOKIES")
+    if [[ -z "$okapi_token" ]]; then
+        echo "Failed to extract folioAccessToken from cookies."
+        rm "$COOKIES"
+        exit 1
+    fi
+    token_timestamp=$(date +%s)
+    echo "Token refreshed at $(date -d @${token_timestamp})"
+}
+
+ensure_valid_token() {
+    local now
+    now=$(date +%s)
+    if [[ $(( now - token_timestamp )) -ge "$TOKEN_LIFESPAN" ]]; then
+        refresh_token
+    fi
+}
+
+# Initial login
+refresh_token
 
 # Step 1: Search and replace values in .docs[].location field
 jq --arg search "$search" --arg replace "$replace" \
@@ -40,10 +80,10 @@ jq -c '.[]' "$data_file_replaced_matched" | nl -nln | while read -r index json; 
     mkdir -p "${records_dir}"
     echo "$json" >"${records_dir}/record_${index}.json"
 done
-echo "Step 4: Split files created for each matched record."
+echo "Step 4: Split files created for each matched record"
 
 read -p "Are you sure you want to UPDATE these licenses? Then type \"y\" to proceed: " -n 1 -r
-echo # (optional) move to a new line
+echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
 
     # Step 4: PUT to API
@@ -58,6 +98,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
         echo "Endpoint: ${okapi_url}/${endpoint}"
         echo "Request: ${okapi_url}/${endpoint}/${uuid}"
 
+        ensure_valid_token
         curl -s --location --request PUT "${okapi_url}/${endpoint}/${uuid}" \
             --header "Cookie: folioAccessToken=${okapi_token}" \
             --header "Content-Type: application/json" \
@@ -71,3 +112,6 @@ else
     echo "Operation aborted."
 
 fi
+
+# Cleanup
+rm -f "$COOKIES"

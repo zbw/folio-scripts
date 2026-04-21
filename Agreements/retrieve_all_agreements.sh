@@ -102,7 +102,7 @@ while :; do
 done
 
 # Write the entire array to the output file
-all_data=$(echo "$all_data" | jq 'unique_by(.id)')
+all_data=$(echo "$all_data" | jq -c 'unique_by(.id)')
 echo "$all_data" >"$output_file"
 count=$(cat "$output_file" | jq -r '.[] | [.id] | @tsv' | wc -l)
 unique_count=$(cat "$output_file" | jq -r '.[] | [.id] | @tsv' | sort | uniq | wc -l)
