@@ -44,14 +44,6 @@ refresh_token() {
     echo "Token refreshed at $(date -d @${token_timestamp})"
 }
 
-ensure_valid_token() {
-    local now
-    now=$(date +%s)
-    if [ $(( now - token_timestamp )) -ge "$TOKEN_LIFESPAN" ]; then
-        refresh_token
-    fi
-}
-
 # Check whether the argument for the input file has been specified
 if [ "$#" -ne 1 ]; then
     echo "Please enter the file name for the input file with the UUID's."
@@ -59,7 +51,7 @@ if [ "$#" -ne 1 ]; then
 fi
 
 input_file="$1"
-sync_state="SYNCHRONIZING"
+sync_state="SYNCHRONIZING"  # One of SYNCHRONIZING or PAUSED
 
 # Check whether the input file exists
 if [ ! -f "${input_file}" ]; then
