@@ -41,20 +41,34 @@ In case you already have a list of titleInstance UUID's you want to update, this
 
 1. Run `retrieve_all_agreements.sh` to fetch all agreements. A JSON file with the full records is stored in the`data` subdirectory.
 2. Edit `update_agreements_search_replace_value.sh` and enter the existing text that should be replaced into the variable `search` and the new replacement text into the variable `replace`. The text will be replaced while remaining in its current field.
-3. Now run the update script and confirm the update.
+3. Now run the update script and confirm the update:
 
+    ```console
+    ./update_agreements_search_replace_value.sh <file with agreements>
+
+    ```
 
 #### Search and replace values in .supplementaryDocs[].location field and move the value from location to url
 
 1. Run `retrieve_all_agreements.sh` to fetch all agreements. A JSON file with the full records is stored in the`data` subdirectory.
 2. Edit `update_agreements_search_replace_value_move_suppDocsLocation_to_suppDocsUrl.sh` and enter the existing text that should be replaced into the variable `search` and the new replacement text into the variable `replace`. The text will be replaced and copied from location into url.
-2. Now run the update script and confirm the update.
+3. Now run the update script and confirm the update:
+
+    ```console
+    ./update_agreements_search_replace_value_move_suppDocsLocation_to_suppDocsUrl.sh <file with agreements>
+
+    ```
 
 #### Search and replace values in .supplementaryDocs[].url field and move the value from url to location
 
 1. Run `retrieve_all_agreements.sh` to fetch all agreements. A JSON file with the full records is stored in the`data` subdirectory.
 2. Edit `update_agreements_search_replace_value_move_suppDocsUrl_to_suppDocsLocation.sh` and enter the existing text that should be replaced into the variable `search` and the new replacement text into the variable `replace`. The text will be replaced and copied from location into url.
-3. Now run the update script and confirm the update.
+3. Now run the update script and confirm the update:
+
+    ```console
+    ./update_agreements_search_replace_value_move_suppDocsUrl_to_suppDocsLocation.sh <file with agreements>
+
+    ```
 
 ### Update titleInstances
 
