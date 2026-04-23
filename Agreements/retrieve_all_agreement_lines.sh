@@ -61,7 +61,7 @@ refresh_token
 # Function to get the next page
 fetch_data() {
     curl --silent --location --header "Cookie: folioAccessToken=$okapi_token" \
-        "${okapi_url}${endpoint}?page=$1&perPage=$2" >"$temp_file"
+        "${okapi_url}${endpoint}?page=$1&perPage=$2&sort=resource.name;asc" >"$temp_file"
     #echo "Page $1, per_page $2: $(jq -r '. | length // .data | length // 0' "$temp_file") records in response"
 }
 
@@ -89,7 +89,7 @@ while :; do
     fi
 
     # Insert data into the array, remove duplicates
-    all_data=$(echo "$all_data" "$data" | jq -s 'add | unique_by(.id)')
+    all_data=$(echo "$all_data" "$data" | jq -cs 'add | unique_by(.id)')
 
     # Check if the number of records is less than per_page
     current_batch_size=$(echo "$data" | jq '. | length')
@@ -103,7 +103,6 @@ while :; do
 done
 
 # Write the entire array to the output file
-all_data=$(echo "$all_data" | jq -c 'unique_by(.id)')
 echo "$all_data" >"$output_file"
 count=$(cat "$output_file" | jq -r '.[] | [.id] | @tsv' | wc -l)
 unique_count=$(cat "$output_file" | jq -r '.[] | [.id] | @tsv' | sort | uniq | wc -l)
