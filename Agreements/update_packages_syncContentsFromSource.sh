@@ -91,7 +91,8 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
 
     # Build payload with all package IDs at once
     payload=$(jq -n -c \
-        '{"packageIds": $ARGS.positional, "syncState": "SYNCHRONIZING"}' \
+        --arg state "${sync_state}" \
+        '{"packageIds": $ARGS.positional, "syncState": $state}' \
         --args "${package_ids[@]}")
     # echo "Payload: ${payload}"  # For debugging
     echo "Sending sync request for ${#package_ids[@]} package(s)..."
