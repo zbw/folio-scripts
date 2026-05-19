@@ -27,7 +27,7 @@ jq -r '
     sort_by(.[0].resource.name | split("in Package ") | if length > 1 then .[1] else "" end) |
     .[] |
     [(map(.id) | join("|")), .[0].resource.id, .[0].resource.name, .[0].resource.class,
-     .[0].resource._object.pkg.name]
+     .[0].resource._object.pkg.name, .[0].resource._object.pkg.id]
   ) | @tsv
 ' <JSON file>
 ```
