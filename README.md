@@ -12,7 +12,7 @@ The scripts require the jq utility to use. All assume you have the following fil
 
 - *tenant* -- name of the FOLIO tenant
 - *okapi_url* -- Okapi URL for the tenant
-- *oakpi_username* -- username for login
+- *okapi_username* -- username for login
 - *okapi_password* -- password relating to okapi_username
 - *okapi_token* -- contains a valid Okapi token **(DEPRECATED)**
 
