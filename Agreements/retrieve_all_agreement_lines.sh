@@ -60,9 +60,8 @@ refresh_token
 
 # Function to get the next page
 fetch_data() {
-    curl --silent --location --header "Cookie: folioAccessToken=$okapi_token" \
+    curl -X GET --silent --location --header "x-okapi-tenant: ${tenant}" --header "Cookie: folioAccessToken=$okapi_token" \
         "${okapi_url}${endpoint}?page=$1&perPage=$2&sort=resource.name;asc" >"$temp_file"
-    #echo "Page $1, per_page $2: $(jq -r '. | length // .data | length // 0' "$temp_file") records in response"
 }
 
 # Loop for processing all data records

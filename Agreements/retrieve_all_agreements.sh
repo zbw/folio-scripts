@@ -60,7 +60,7 @@ refresh_token
 
 # Function to get the next page
 fetch_data() {
-    curl --silent --location --header "Cookie: folioAccessToken=$okapi_token" \
+    curl -X GET --silent --location --header "x-okapi-tenant: ${tenant}" --header "Cookie: folioAccessToken=$okapi_token" \
         "${okapi_url}${endpoint}?page=$1&perPage=$2" >"$temp_file"
 }
 
