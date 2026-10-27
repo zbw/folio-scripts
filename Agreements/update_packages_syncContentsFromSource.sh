@@ -65,7 +65,8 @@ jsonl_tmp=$(mktemp --tmpdir instances.XXXXXXXXXX.jsonl)
 
 # Extract package IDs from the input file
 # Only processes entries if resource.class == "org.olf.kb.Pkg"
-mapfile -t package_ids < <(jq -r '.[] | select(.resource.class == "org.olf.kb.Pkg") | .resource.id' "${input_file}" | tr -d '\r')
+# Remove duplicate package IDs
+mapfile -t package_ids < <(jq -r '.[] | select(.resource.class == "org.olf.kb.Pkg") | .resource.id' "${input_file}" | tr -d '\r' | sort -u)
 
 if [ ${#package_ids[@]} -eq 0 ]; then
     echo "No package IDs found in '${input_file}'. Exiting."
