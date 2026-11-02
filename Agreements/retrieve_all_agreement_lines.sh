@@ -19,7 +19,7 @@ timestamp=$(date +%Y%m%d_%H%M%S)
 
 # Files
 temp_file="response_temp.json"
-output_file="agreement_lines_${timestamp}.json"
+output_file="agreement_lines_${tenant}_${timestamp}.json"
 
 # Login and store cookies, set token timestamp
 COOKIES=$(mktemp --tmpdir cookies.XXXXXXXXXX)

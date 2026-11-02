@@ -86,7 +86,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     [ ! -d "$updated_record_dir" ] && mkdir -p "$updated_record_dir"
 
     # Log file with package IDs
-    log_file="${updated_record_dir}/sync_${timestamp}.log"
+    log_file="${updated_record_dir}/sync_${tenant}_${timestamp}.log"
     printf '%s\n' "${package_ids[@]}" > "${log_file}"
     echo "Package IDs written to ${log_file}"
 
